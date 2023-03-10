@@ -11,4 +11,4 @@ URL: http://localhost:10000/
 
 My render URL: https://zillow-home-values.onrender.com
 
-Note: city_geo_data_from_api.py is a script for obtaining city map polygon coordinates from "https://nominatim.openstreetmap.org" and outputs the results as a JSON to be used in pydeck chart. This was used to get the geo data for top 100 largest cities in the US, results of which are in city_dict.json. It's not necessary to run for the streamlit app to function.
+Note: city_geo_data_from_api.py is a script for obtaining city map polygon coordinates from "https://nominatim.openstreetmap.org" and outputs the results as a JSON. This was used to get the geo data for top 100 largest cities in the US, results of which are in city_dict.json.

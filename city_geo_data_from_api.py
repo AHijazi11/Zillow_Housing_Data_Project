@@ -21,11 +21,11 @@ def get_city_polygon(row):
 
 
 df_zillow = pd.read_csv(
-    './cleaned_df_zillow.csv')
+    './City_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv')
 
 df_zillow.iloc[:100, :].apply(get_city_polygon, axis=1)
 
-file_name = 'city_dict_top500_2.json'
+file_name = 'city_dict_1.json'
 
 with open(file_name, 'w') as f:
     json.dump(city_dict, f)
