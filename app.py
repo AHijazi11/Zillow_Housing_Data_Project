@@ -5,6 +5,15 @@ import calendar
 from plotly import express as px
 import pydeck as pdk
 import json
+from zipfile import ZipFile
+
+# loading the temp.zip and creating a zip object
+with ZipFile('./City_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.zip', 'r') as zObject:
+
+    # Extracting all the members of the zip
+    # into a specific location.
+    zObject.extractall(
+        path='./')
 
 df_zillow = pd.read_csv(
     './City_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv')
