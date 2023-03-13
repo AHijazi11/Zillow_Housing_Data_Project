@@ -28,7 +28,7 @@ df_zillow.drop(['RegionID', 'StateName', 'RegionType',
 # rename RegionName to City
 df_zillow.rename(columns={'RegionName': 'City'}, inplace=True)
 
-st.header('USA Housing Data from 2000 to 2023')
+st.header('USA Monthly Housing Data from 2000 to 2023')
 
 # slider to select data (M/YYYY)
 selected_date = st.slider(
@@ -86,7 +86,7 @@ else:
         title_text=a.title.text.replace("sum of", "")))
     st.write(fig)
 
-st.subheader('Map of Median Home Values for 100 Largest Cities in US')
+st.subheader('Map of Monthly Median Home Values for 100 Largest Cities in US')
 
 # date slider for pydeck chart
 selected_date_pydeck = st.slider(
