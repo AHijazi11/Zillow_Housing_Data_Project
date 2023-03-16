@@ -30,12 +30,10 @@ df_zillow.rename(columns={'RegionName': 'City'}, inplace=True)
 
 st.header('USA Monthly Housing Data from 2000 to 2023')
 
-# slider to select data (M/YYYY)
-selected_date = st.slider(
-    "Date: M/YYYY",
-    min_value=dt.date(2000, 1, 31),
-    max_value=dt.date(2023, 1, 31),
-    value=dt.date(2020, 3, 1),
+# slider to select date ranges of data to be displayed
+selected_date_range = st.slider(
+    "Date Range: From M/YYYY to M/YYYY",
+    value=[dt.date(2000, 1, 31), dt.date(2023, 1, 31)],
     format="M/YYYY")
 
 
@@ -48,11 +46,25 @@ def get_last_day_in_month(any_date):
     return last_day_date
 
 
+columns_to_show = list(df_zillow.loc[:, ['City', 'State']])
+
+date_range_columns = list(df_zillow.loc[:, get_last_day_in_month(selected_date_range[0]):get_last_day_in_month(
+    selected_date_range[1])])
+
+columns_to_show.extend(date_range_columns)
+
 hide_selected_dataframe = st.checkbox(
     'Hide dataframe')
 if not hide_selected_dataframe:
-    st.write(df_zillow[['SizeRank', 'City', 'State',
-             get_last_day_in_month(selected_date)]])
+    st.write(df_zillow[columns_to_show])
+
+# slider to select data (M/YYYY)
+selected_date = st.slider(
+    "Date: M/YYYY",
+    min_value=dt.date(2000, 1, 31),
+    max_value=dt.date(2023, 1, 31),
+    value=dt.date(2020, 3, 1),
+    format="M/YYYY")
 
 # variable df based on selected date to be used in scatter plot
 df_state_last_day_date = df_zillow.groupby('State').agg(
