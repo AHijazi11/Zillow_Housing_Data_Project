@@ -2,3 +2,4 @@ pandas==1.3.1
 streamlit==1.19.0
 plotly.express
 pydeck 
+altair==4.2.2
