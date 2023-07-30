@@ -6,38 +6,27 @@ from plotly import express as px
 import pydeck as pdk
 import json
 from zipfile import ZipFile
-import numpy as np
-import matplotlib.pyplot as plt
 
-# Set page configuration
-st.set_page_config(layout="wide")
+# loading the temp.zip and creating a zip object
+with ZipFile('./City_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.zip', 'r') as zObject:
 
-@st.cache_resource
-def load_data():
-    # loading the temp.zip and creating a zip object
-    with ZipFile('./City_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.zip', 'r') as zObject:
-        # Extracting all the members of the zip
-        # into a specific location.
-        zObject.extractall(path='./')
+    # Extracting all the members of the zip
+    # into a specific location.
+    zObject.extractall(
+        path='./')
 
-    df_zillow = pd.read_csv('./City_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv')
+df_zillow = pd.read_csv(
+    './City_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv')
 
-    # change home values from float to int & fill NA with 0
-    df_zillow.iloc[:, 8:] = df_zillow.iloc[:, 8:].fillna(0).astype(int)
+# change home values from float to int & fill NA with 0
+df_zillow.iloc[:, 8:] = df_zillow.iloc[:, 8:].fillna(0).astype(int)
 
-    # drop excess columns:
-    df_zillow.drop(['RegionID', 'StateName', 'RegionType',
-                'Metro', 'CountyName'], axis=1, inplace=True)
+# drop excess columns:
+df_zillow.drop(['RegionID', 'StateName', 'RegionType',
+               'Metro', 'CountyName'], axis=1, inplace=True)
 
-    # rename RegionName to City
-    df_zillow.rename(columns={'RegionName': 'City'}, inplace=True)
-
-    # create new df for the top 100 largest cities
-    df_largerst_100_cities = df_zillow.iloc[:100, :]
-
-    return df_zillow, df_largerst_100_cities
-
-df_zillow, df_largerst_100_cities = load_data()
+# rename RegionName to City
+df_zillow.rename(columns={'RegionName': 'City'}, inplace=True)
 
 st.header('USA Monthly Housing Data from 2000 to 2023')
 
@@ -47,6 +36,7 @@ selected_date_range = st.slider(
     value=[dt.date(2000, 1, 31), dt.date(2023, 1, 31)],
     format="M/YYYY")
 
+
 def get_last_day_in_month(any_date):
     # use calendar module to get last day of month of any_date
     last_day = calendar.monthrange(any_date.year, any_date.month)[1]
@@ -54,6 +44,7 @@ def get_last_day_in_month(any_date):
     last_day_date = dt.date(
         any_date.year, any_date.month, last_day).strftime("%Y-%m-%d")
     return last_day_date
+
 
 columns_to_show = list(df_zillow.loc[:, ['City', 'State']])
 
@@ -67,7 +58,6 @@ hide_selected_dataframe = st.checkbox(
 if not hide_selected_dataframe:
     st.write(df_zillow[columns_to_show])
 
-# ... Continue the rest of your code ...
 # slider to select data (M/YYYY)
 selected_date = st.slider(
     "Date: M/YYYY",
@@ -119,57 +109,50 @@ selected_date_pydeck = st.slider(
     value=dt.date(2020, 3, 1),
     format="M/YYYY")
 
-# Load the city data
-with open('simplified_city_dict.json', 'r') as f:
-    city_data = json.load(f)
+# define the input file name
+file_name = 'city_dict.json'
+
+# read the dictionary from a JSON file
+with open(file_name, 'r') as f:
+    # Placeholder dict for city geo polygon & price
+    city_dict = json.load(f)
+
 
 def set_property_price(row):
     '''
     function to set property price value in ['properties']['price']:
     '''
-    city_data['features'][row['SizeRank']
+    city_dict['features'][row['SizeRank']
                           ]['properties']['price'] = row[get_last_day_in_month(selected_date_pydeck)]
+
 
 df_largerst_100_cities.apply(set_property_price, axis=1)
 
-def linear_color_scale(val, min_val, max_val):
-    """Create a linear color scale"""
-    norm = plt.Normalize(min_val, max_val)
-    cmap = plt.get_cmap("YlOrRd")
-    rgba_color = cmap(norm(val))
-    # Convert the color from range 0-1 to 0-255
-    return [int(x*255) for x in rgba_color[:3]]
-
-
-# Find the min and max price
-min_price = min(feature['properties']['price'] for feature in city_data['features'])
-max_price = max(feature['properties']['price'] for feature in city_data['features'])
-
-# Add the 'color' property to the city_data
-for feature in city_data['features']:
-    feature['properties']['color'] = linear_color_scale(feature['properties']['price'], min_price, max_price)
-
-layer = pdk.Layer(
-    'ColumnLayer',
-    city_data['features'],
-    get_position='geometry.coordinates',
-    get_elevation='properties.price / 100',
-    elevation_scale=50,
-    radius=5000,
-    get_fill_color='properties.color',
-    pickable=True,
-    auto_highlight=True,
-)
-
-# Set initial view state
-initial_view_state = pdk.ViewState(
-    latitude=30,
-    longitude=-100,
-    zoom=4,
+INITIAL_VIEW_STATE = pdk.ViewState(
+    latitude=38.252740,
+    longitude=-100.473460,
+    zoom=3.25,
     max_zoom=8,
-    pitch=55,
+    pitch=80,
     bearing=10
 )
 
-chart = pdk.Deck(layers=[layer], initial_view_state=initial_view_state)
-st.pydeck_chart(chart)
+geojson = pdk.Layer(
+    'GeoJsonLayer',
+    city_dict,
+    opacity=0.1,
+    stroked=False,
+    filled=True,
+    extruded=True,
+    wireframe=False,
+    get_elevation='properties.price',
+    get_fill_color='[255, 0, 255]',
+    get_line_color=[255, 255, 255],
+    pickable=True,
+    auto_highlight=True
+)
+
+st.pydeck_chart(pdk.Deck(
+    layers=[geojson],
+    initial_view_state=INITIAL_VIEW_STATE)
+)
